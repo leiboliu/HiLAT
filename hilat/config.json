@@ -24,7 +24,7 @@
   "transformer_layer_update_strategy": "no",
   "use_code_representation": false,
   "multi_head_attention": false,
-  "chunk_attention": false,
+  "chunk_attention": true,
   "multi_head_chunk_attention": false,
   "linear_init_mean": 0.0,
   "linear_init_std": 0.03,

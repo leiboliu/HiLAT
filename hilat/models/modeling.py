@@ -5,7 +5,7 @@ import torch
 from torch.nn import BCEWithLogitsLoss, Dropout, Linear
 from transformers import AutoModel, XLNetModel
 
-from lwat.models.utils import initial_code_title_vectors
+from hilat.models.utils import initial_code_title_vectors
 
 logger = logging.getLogger("lwat")
 
@@ -222,6 +222,7 @@ class CodingModel(torch.nn.Module):
         # Label-wise attention layers
         # output: (batch_size, num_chunks, num_labels, hidden_size)
         attention_output = []
+        attention_weights = []
 
         for i in range(self.coding_model_config.num_chunks):
             # input: (batch_size, max_seq_length, transformer_hidden_size)
@@ -233,9 +234,12 @@ class CodingModel(torch.nn.Module):
             # l3_attention shape: (batch_size, num_labels, hidden_size)
             # attention_weight: (batch_size, num_labels, max_seq_length)
             attention_output.append(l3_attention)
+            attention_weights.append(attention_weight)
 
         attention_output = torch.stack(attention_output)
         attention_output = attention_output.transpose(0, 1)
+        attention_weights = torch.stack(attention_weights)
+        attention_weights = attention_weights.transpose(0, 1)
 
         l3_dropout = self.dropout_att(attention_output)
 
@@ -243,6 +247,7 @@ class CodingModel(torch.nn.Module):
             # Chunk attention layers
             # output: (batch_size, num_labels, hidden_size)
             chunk_attention_output = []
+            chunk_attention_weights = []
 
             for i in range(self.coding_model_config.num_labels):
                 if self.coding_model_config.multi_head_chunk_attention:
@@ -251,9 +256,12 @@ class CodingModel(torch.nn.Module):
                     chunk_attention = self.chunk_attention_layer
                 l4_chunk_attention, l4_chunk_attention_weights = chunk_attention(l3_dropout[:, :, i])
                 chunk_attention_output.append(l4_chunk_attention.squeeze())
+                chunk_attention_weights.append(l4_chunk_attention_weights.squeeze())
 
             chunk_attention_output = torch.stack(chunk_attention_output)
             chunk_attention_output = chunk_attention_output.transpose(0, 1)
+            chunk_attention_weights = torch.stack(chunk_attention_weights)
+            chunk_attention_weights = chunk_attention_weights.transpose(0, 1)
             # output shape: (batch_size, num_labels, hidden_size)
             l4_dropout = self.dropout_att(chunk_attention_output)
         else:
@@ -280,7 +288,7 @@ class CodingModel(torch.nn.Module):
             "loss": loss,
             "logits": logits,
             "label_attention_weights": attention_weights,
-            "chunk_attention_weights": chunk_attention_weights
+            "chunk_attention_weights": chunk_attention_weights if self.coding_model_config.chunk_att else []
         }
 
     def freeze_all_transformer_layers(self):
