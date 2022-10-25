@@ -14,5 +14,6 @@ python3 hilat/data/mimic3_data_preparer.py \
 ## Training model
 1. Use run_coding.sh to train the model on TPU environment
 2. Train on GPU
+
 python3 hilat/run_coding.py config.json
 
