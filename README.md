@@ -20,3 +20,5 @@ python3 hilat/data/mimic3_data_preparer.py \
 
 python3 hilat/run_coding.py config.json
 
+## Support
+For more information, please contact leibo.liu@unsw.edu.au.
