@@ -255,8 +255,8 @@ class CodingModel(torch.nn.Module):
                 else:
                     chunk_attention = self.chunk_attention_layer
                 l4_chunk_attention, l4_chunk_attention_weights = chunk_attention(l3_dropout[:, :, i])
-                chunk_attention_output.append(l4_chunk_attention.squeeze())
-                chunk_attention_weights.append(l4_chunk_attention_weights.squeeze())
+                chunk_attention_output.append(l4_chunk_attention.squeeze(dim=1))
+                chunk_attention_weights.append(l4_chunk_attention_weights.squeeze(dim=1))
 
             chunk_attention_output = torch.stack(chunk_attention_output)
             chunk_attention_output = chunk_attention_output.transpose(0, 1)
