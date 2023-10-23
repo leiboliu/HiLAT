@@ -281,12 +281,15 @@ class CodingModel(torch.nn.Module):
         # each code has a binary linear formula
         logits = self.classifier_layer.weight.mul(l4_dropout).sum(dim=2).add(self.classifier_layer.bias)
 
+        preds = self.sigmoid(logits)
+
         loss_fct = BCEWithLogitsLoss()
         loss = loss_fct(logits, targets)
 
         return {
             "loss": loss,
             "logits": logits,
+            "preds": preds,
             "label_attention_weights": attention_weights,
             "chunk_attention_weights": chunk_attention_weights if self.coding_model_config.chunk_att else []
         }
